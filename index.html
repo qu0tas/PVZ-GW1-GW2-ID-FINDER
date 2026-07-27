@@ -540,15 +540,26 @@
       </div>
     </div>
 
-    <div class="db-filter-row">
-      <label class="db-checkbox">
-        <input type="checkbox" id="dbSortByLength">
-        <span data-i18n="dbSortByLength">Сначала самые длинные значения</span>
-      </label>
-      <label class="db-checkbox">
-        <input type="checkbox" id="dbBracesFilter">
-        <span data-i18n="dbBracesFilter">Только с 2+ фигурными скобками {}</span>
-      </label>
+    <div class="db-search-row">
+      <div class="field" style="max-width:110px;flex:0 0 auto;min-width:90px;">
+        <label data-i18n="dbLenMinLabel">Длина от</label>
+        <input type="text" id="dbLenMin" inputmode="numeric" placeholder="0" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field" style="max-width:110px;flex:0 0 auto;min-width:90px;">
+        <label data-i18n="dbLenMaxLabel">Длина до</label>
+        <input type="text" id="dbLenMax" inputmode="numeric" placeholder="1021" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field" style="max-width:220px;flex:0 0 auto;min-width:180px;">
+        <label data-i18n="dbSortModeLabel">Сортировка</label>
+        <select id="dbSortMode">
+          <option value="none" data-i18n="dbSortNone">По умолчанию</option>
+          <option value="len_desc" data-i18n="dbSortLenDesc">Сначала самые длинные</option>
+          <option value="len_asc" data-i18n="dbSortLenAsc">Сначала самые короткие</option>
+          <option value="alpha_asc" data-i18n="dbSortAlphaAsc">По алфавиту A→Z</option>
+          <option value="alpha_desc" data-i18n="dbSortAlphaDesc">По алфавиту Z→A</option>
+          <option value="braces_desc" data-i18n="dbSortBracesDesc">Сначала с фигурными скобками {}</option>
+        </select>
+      </div>
     </div>
 
     <div class="db-table">
@@ -648,8 +659,15 @@ const I18N = {
     dbSubtitle: 'Готовая база известных хешей, извлечённая из игры через Frosty Editor. Можно искать по хешу или по названию/тексту, к которому он привязан — как в списке ассетов самого Frosty.',
     dbSearchHashLabel: 'Поиск по хешу',
     dbSearchNameLabel: 'Поиск по названию',
-    dbSortByLength: 'Сначала самые длинные значения',
-    dbBracesFilter: 'Только с 2+ фигурными скобками {}',
+    dbLenMinLabel: 'Длина от',
+    dbLenMaxLabel: 'Длина до',
+    dbSortModeLabel: 'Сортировка',
+    dbSortNone: 'По умолчанию',
+    dbSortLenDesc: 'Сначала самые длинные',
+    dbSortLenAsc: 'Сначала самые короткие',
+    dbSortAlphaAsc: 'По алфавиту A→Z',
+    dbSortAlphaDesc: 'По алфавиту Z→A',
+    dbSortBracesDesc: 'Сначала с фигурными скобками {}',
     dbColHash: 'Хеш',
     dbColName: 'Привязано к',
     dbCount: (n, game) => 'Загружено ' + n.toLocaleString('ru-RU') + ' хешей для ' + game,
@@ -703,8 +721,15 @@ const I18N = {
     dbSubtitle: 'A ready-made database of known hashes extracted from the game via Frosty Editor. Search by hash, or by the name/text it\'s attached to — just like Frosty\'s own asset list.',
     dbSearchHashLabel: 'Search by hash',
     dbSearchNameLabel: 'Search by name',
-    dbSortByLength: 'Sort longest value first',
-    dbBracesFilter: 'Only with 2+ curly braces {}',
+    dbLenMinLabel: 'Length from',
+    dbLenMaxLabel: 'Length to',
+    dbSortModeLabel: 'Sort',
+    dbSortNone: 'Default order',
+    dbSortLenDesc: 'Longest first',
+    dbSortLenAsc: 'Shortest first',
+    dbSortAlphaAsc: 'Alphabetical A→Z',
+    dbSortAlphaDesc: 'Alphabetical Z→A',
+    dbSortBracesDesc: 'With curly braces {} first',
     dbColHash: 'Hash',
     dbColName: 'Attached to',
     dbCount: (n, game) => n.toLocaleString('en-US') + ' hashes loaded for ' + game,
@@ -1025,8 +1050,9 @@ const gameGw1Btn = document.getElementById('gameGw1');
 const gameGw2Btn = document.getElementById('gameGw2');
 const dbHashSearch = document.getElementById('dbHashSearch');
 const dbNameSearch = document.getElementById('dbNameSearch');
-const dbSortByLength = document.getElementById('dbSortByLength');
-const dbBracesFilter = document.getElementById('dbBracesFilter');
+const dbLenMin = document.getElementById('dbLenMin');
+const dbLenMax = document.getElementById('dbLenMax');
+const dbSortMode = document.getElementById('dbSortMode');
 const dbResultsEl = document.getElementById('dbResults');
 const dbCountEl = document.getElementById('dbCount');
 
@@ -1064,13 +1090,21 @@ function braceCount(name){
   return m ? m.length : 0;
 }
 
+// Символы за пределами базового ASCII: кириллица, акценты, иероглифы и т.п.
+// Обычная английская пунктуация/цифры/скобки под это не попадают
 function computeMatches(){
-  const hq = dbHashSearch.value.trim().toUpperCase().replace(/^0X/,'');
+  const hq = dbHashSearch.value.trim().toUpperCase().replace(/^0X/, '');
   const nq = dbNameSearch.value.trim().toLowerCase();
+
   let list = currentList();
 
-  if (dbBracesFilter.checked){
-    list = list.filter(([h, name]) => braceCount(name) >= 2);
+  const lenMin = parseInt(dbLenMin.value, 10);
+  const lenMax = parseInt(dbLenMax.value, 10);
+  if (!Number.isNaN(lenMin)){
+    list = list.filter(([h, name]) => name.length >= lenMin);
+  }
+  if (!Number.isNaN(lenMax)){
+    list = list.filter(([h, name]) => name.length <= lenMax);
   }
 
   if (hq || nq){
@@ -1081,8 +1115,17 @@ function computeMatches(){
     });
   }
 
-  if (dbSortByLength.checked){
+  const sortMode = dbSortMode.value;
+  if (sortMode === 'len_desc'){
     list = list.slice().sort((a, b) => b[1].length - a[1].length);
+  } else if (sortMode === 'len_asc'){
+    list = list.slice().sort((a, b) => a[1].length - b[1].length);
+  } else if (sortMode === 'alpha_asc'){
+    list = list.slice().sort((a, b) => a[1].localeCompare(b[1]));
+  } else if (sortMode === 'alpha_desc'){
+    list = list.slice().sort((a, b) => b[1].localeCompare(a[1]));
+  } else if (sortMode === 'braces_desc'){
+    list = list.slice().sort((a, b) => braceCount(b[1]) - braceCount(a[1]));
   }
 
   return list;
@@ -1150,8 +1193,9 @@ gameGw2Btn.addEventListener('click', () => {
 
 dbHashSearch.addEventListener('input', () => renderDbResults(true));
 dbNameSearch.addEventListener('input', () => renderDbResults(true));
-dbSortByLength.addEventListener('change', () => renderDbResults(true));
-dbBracesFilter.addEventListener('change', () => renderDbResults(true));
+dbLenMin.addEventListener('input', () => renderDbResults(true));
+dbLenMax.addEventListener('input', () => renderDbResults(true));
+dbSortMode.addEventListener('change', () => renderDbResults(true));
 
 pgFirstBtn.addEventListener('click', () => goToPage(1));
 pgPrevBtn.addEventListener('click', () => goToPage(currentPage - 1));
