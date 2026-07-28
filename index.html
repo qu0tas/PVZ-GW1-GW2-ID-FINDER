@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Frostbite Hash Tools</title>
+<title>Garden Warfare Tools</title>
 <style>
   :root{
     --bg: #0b0f0d;
@@ -456,14 +456,14 @@
 <body>
 <div class="wrap">
   <div class="topbar">
-    <div class="eyebrow">Frostbite / Frosty Editor</div>
+    <div class="eyebrow">Plants vs. Zombies</div>
     <div class="lang-toggle">
       <button id="langRu" class="active">RU</button>
       <button id="langEn">EN</button>
     </div>
   </div>
-  <h1 data-i18n="mainTitle">Frostbite Hash Tools</h1>
-  <p class="sub" data-i18n="mainSubtitle">Инструменты для работы с хешами имён в Frosty Editor: подбор строки под хеш и готовая база известных хешей PVZ GW1/GW2.</p>
+  <h1 data-i18n="mainTitle">Garden Warfare Tools</h1>
+  <p class="sub" data-i18n="mainSubtitle">Hash Database & ID Finder</p>
 
   <div class="maintabs">
     <button id="tabBtnFinder" class="active" data-i18n="tabFinder">ID Finder</button>
@@ -634,8 +634,8 @@
 /* =============================== I18N =============================== */
 const I18N = {
   ru: {
-    mainTitle: 'Frostbite Hash Tools',
-    mainSubtitle: 'Инструменты для работы с хешами имён в Frosty Editor: подбор строки под хеш и готовая база известных хешей PVZ GW1/GW2.',
+    mainTitle: 'Garden Warfare Tools',
+    mainSubtitle: 'Hash Database & ID Finder',
     tabFinder: 'ID Finder',
     tabDb: 'База хешей GW1/GW2',
     finderSubtitle: 'Вставь целевой хеш (например <code>081816D8</code>, с <code>0x</code> или без) — страница подберёт строку вида <code>ID_xxxxxxxx</code>, которая даёт ровно этот хеш. Всё считается локально, в браузере.',
@@ -696,8 +696,8 @@ const I18N = {
     creditDiscord: 'Discord: xviiyvojer (вопросы и сообщения об ошибках)'
   },
   en: {
-    mainTitle: 'Frostbite Hash Tools',
-    mainSubtitle: 'Tools for working with Frosty Editor name hashes: brute-force an ID for a hash, and a ready-made database of known PVZ GW1/GW2 hashes.',
+    mainTitle: 'Garden Warfare Tools',
+    mainSubtitle: 'Hash Database & ID Finder',
     tabFinder: 'ID Finder',
     tabDb: 'GW1/GW2 Hash Database',
     finderSubtitle: 'Paste the target hash (e.g. <code>081816D8</code>, with or without <code>0x</code>) — the page will find a string of the form <code>ID_xxxxxxxx</code> that produces exactly this hash. Everything runs locally in your browser.',
@@ -1216,7 +1216,31 @@ pgJumpInput.addEventListener('keydown', (e) => {
 applyLanguage('ru');
 </script>
 
+<div id="socialLinks" style="position:fixed;left:12px;bottom:12px;display:flex;gap:10px;align-items:center;z-index:50">
+  <a href="https://github.com/qu0tas/PVZ-GW1-GW2-ID-FINDER" target="_blank" rel="noopener" title="GitHub" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--line);border-radius:8px;color:var(--dim);background:var(--bg);transition:.15s" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent-dim)'" onmouseout="this.style.color='var(--dim)';this.style.borderColor='var(--line)'">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.5 7.5 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+  </a>
+  <a href="#" id="discordLink" title="Discord" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:1px solid var(--line);border-radius:8px;color:var(--dim);background:var(--bg);transition:.15s;position:relative" onmouseover="this.style.color='var(--accent2)';this.style.borderColor='var(--accent-dim)'" onmouseout="this.style.color='var(--dim)';this.style.borderColor='var(--line)'">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M13.55 2.9A13.2 13.2 0 0 0 10.27 2c-.16.28-.33.65-.46.94a12.3 12.3 0 0 0-3.62 0 6.7 6.7 0 0 0-.46-.94 13.2 13.2 0 0 0-3.28.9C.6 6.14.02 9.28.3 12.38a13.3 13.3 0 0 0 4 2.02c.32-.44.6-.9.84-1.4-.46-.17-.9-.39-1.31-.64.11-.08.22-.17.32-.25 2.53 1.18 5.27 1.18 7.77 0 .1.09.21.17.32.25-.42.25-.85.47-1.31.64.24.5.52.96.84 1.4a13.3 13.3 0 0 0 4-2.02c.33-3.58-.56-6.7-2.36-9.48ZM5.68 10.5c-.76 0-1.38-.7-1.38-1.56 0-.86.61-1.56 1.38-1.56.77 0 1.4.71 1.38 1.56 0 .86-.61 1.56-1.38 1.56Zm4.64 0c-.76 0-1.38-.7-1.38-1.56 0-.86.61-1.56 1.38-1.56.78 0 1.4.71 1.38 1.56 0 .86-.6 1.56-1.38 1.56Z"/></svg>
+    <span id="discordCopiedTip" style="display:none;position:absolute;bottom:110%;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;background:var(--accent);color:#062b16;padding:3px 7px;border-radius:5px;font-family:var(--mono)">copied ✓</span>
+  </a>
+</div>
 <div id="credits" style="position:fixed;right:12px;bottom:12px;font-size:12px;opacity:.8;text-align:right"><div data-i18n="creditCreated">Создано qu0tas (Azzinnox)</div><div data-i18n="creditThanks">Отдельная благодарность tchlhy за информацию об ID</div><div data-i18n="creditDiscord">Discord: xviiyvojer (вопросы и сообщения об ошибках)</div></div>
+<script>
+(function(){
+  var link = document.getElementById('discordLink');
+  var tip = document.getElementById('discordCopiedTip');
+  link.addEventListener('click', function(e){
+    e.preventDefault();
+    var tag = 'xviiyvojer';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(tag).catch(function(){});
+    }
+    tip.style.display = 'block';
+    setTimeout(function(){ tip.style.display = 'none'; }, 1400);
+  });
+})();
+</script>
 </div>
 </body>
 </html>
