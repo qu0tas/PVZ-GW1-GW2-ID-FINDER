@@ -2,6 +2,10 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png">
 <title>Garden Warfare Tools</title>
 <style>
   :root{
@@ -451,6 +455,72 @@
     text-align:center;
   }
   .db-pagination .pg-jump input:focus{outline:none;border-color:var(--accent-dim);}
+
+  /* ===================== MOBILE OPTIMIZATION ===================== */
+  /* Всё ниже применяется только на узких экранах — вид на ПК не меняется */
+  @media (max-width: 720px){
+    .wrap{padding:22px 14px 130px;}
+
+    .topbar{margin-bottom:8px;}
+    h1{font-size:21px;}
+    .sub{font-size:12.5px;}
+
+    /* Вкладки: не сжимаем текст, даём горизонтальный скролл */
+    .maintabs{
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling:touch;
+      flex-wrap:nowrap;
+      scrollbar-width:none;
+    }
+    .maintabs::-webkit-scrollbar{display:none;}
+    .maintabs button{
+      white-space:nowrap;
+      flex:0 0 auto;
+      padding:10px 12px;
+      font-size:12.5px;
+    }
+
+    .panel{padding:16px;}
+
+    /* Поле ввода хеша + кнопка "Найти ID" — в столбик, кнопка на всю ширину */
+    .row{flex-direction:column;}
+    .row button.primary{width:100%;padding:12px 0;}
+
+    .opts{gap:12px;}
+    .opts .opt{width:100%;justify-content:space-between;}
+    .opts select{flex:0 0 auto;}
+
+    /* На мобильных iOS зумит страницу при фокусе, если шрифт поля < 16px */
+    textarea, select{font-size:16px;}
+
+    /* Игровой переключатель GW1/GW2 на всю ширину, кнопки делят место поровну */
+    .game-toggle{width:100%;}
+    .game-toggle button{flex:1;padding:10px 0;}
+
+    /* Поля поиска и фильтров базы хешей — в столбик */
+    .db-search-row{flex-direction:column;gap:12px;}
+    .db-search-row .field{min-width:0;width:100%;}
+    .db-filter-row{flex-direction:column;gap:12px;}
+    .db-filter-row > .field{max-width:none !important;width:100%;}
+
+    /* Таблица базы хешей: узкая колонка хеша, чтобы название не обрезалось */
+    .db-table-head .col-hash, .db-row .col-hash{width:84px;font-size:11px;}
+    .db-table-head{font-size:10px;padding:8px 10px;}
+    .db-row{padding:8px 10px;font-size:12.5px;gap:6px;}
+    .db-table-body{max-height:360px;}
+
+    /* Пагинация в столбик, кнопки покрупнее для пальца */
+    .db-pagination{flex-direction:column;align-items:stretch;gap:10px;}
+    .db-pagination .pg-controls{justify-content:center;flex-wrap:wrap;}
+    .db-pagination button{padding:9px 12px;}
+    .db-pagination .pg-info{text-align:center;}
+
+    /* Фиксированные соцссылки и подпись — уменьшаем и не даём перекрывать контент */
+    #socialLinks{left:8px;bottom:8px;gap:8px;}
+    #socialLinks a{width:30px;height:30px;}
+    #credits{right:8px;bottom:8px;font-size:9.5px;max-width:52%;line-height:1.5;}
+  }
 </style>
 </head>
 <body>
