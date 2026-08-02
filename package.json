@@ -1,0 +1,15 @@
+{
+  "name": "pvz-gw1-gw2-id-finder",
+  "version": "2.0.0",
+  "description": "Reverse a 32-bit PvZ Garden Warfare 1/2 string hash into an ID_ string, plus a browsable GW1/GW2 hash database. Static, serverless, offline-capable.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "python3 -m http.server 8080",
+    "test": "node tools/selftest.mjs",
+    "sample": "node tools/make-sample-data.mjs",
+    "extract": "node tools/extract-db.mjs"
+  },
+  "license": "MIT",
+  "author": "Azzinnox (qu0tas)"
+}

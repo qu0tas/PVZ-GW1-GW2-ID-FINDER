@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Garden Warfare Tools">
+  <rect width="32" height="32" rx="7" fill="#0b0f0d"/>
+  <rect x="1" y="1" width="30" height="30" rx="6" fill="none" stroke="#2a6b48" stroke-width="1.5"/>
+  <path d="M7 11l4 5-4 5" fill="none" stroke="#4be38a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M15 21h10" fill="none" stroke="#38c6ff" stroke-width="2.4" stroke-linecap="round"/>
+</svg>
