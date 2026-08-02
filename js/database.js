@@ -39,6 +39,11 @@ export function loadDb(game) {
           braces: name.includes('{'),
         });
       }
+      // JSON.parse gives an object, and JS objects do NOT preserve key order:
+      // keys that look like array indices ("10067901") are enumerated first, in
+      // numeric order, before the rest. That silently reordered the table so it
+      // started at 1xxxxxxx instead of 000xxxxx. Sort explicitly.
+      entries.sort((a, b) => (a.hash < b.hash ? -1 : a.hash > b.hash ? 1 : 0));
       return { game, entries, byHash };
     })
     .catch((error) => {

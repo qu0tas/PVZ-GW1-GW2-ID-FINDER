@@ -62,8 +62,9 @@
           <div class="opt">
             <label for="optDepth" data-i18n="finder.depth">Глубина</label>
             <select id="optDepth">
+              <option value="algebra"  selected data-i18n="finder.depthAlgebra">алгебра (мгновенно)</option>
               <option value="fast"     data-i18n="finder.depthFast">быстро</option>
-              <option value="standard" selected data-i18n="finder.depthStd">стандарт</option>
+              <option value="standard" data-i18n="finder.depthStd">стандарт</option>
               <option value="thorough" data-i18n="finder.depthDeep">тщательно</option>
               <option value="custom"   data-i18n="finder.depthCustom">свои настройки</option>
             </select>
@@ -95,10 +96,13 @@
             <label for="optMaxLen" data-i18n="finder.maxLen">до</label>
             <input type="number" id="optMaxLen" min="1" max="12" value="9" class="num">
           </div>
-          <div class="opt opt-grow">
-            <label for="optPrefix" data-i18n="finder.prefix">Префикс</label>
-            <input type="text" id="optPrefix" value="ID_" class="num wide" autocomplete="off" spellcheck="false">
-          </div>
+          <!--
+            Every localized string ID in Frostbite starts with "ID_", so there is
+            nothing to choose here and the control only ate space. The value is
+            still overridable through the ?prefix= URL parameter for the rare
+            case of hashing something that is not a string ID.
+          -->
+          <input type="hidden" id="optPrefix" value="ID_">
         </div>
 
         <p class="budget" id="budget"></p>

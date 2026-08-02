@@ -4,13 +4,15 @@
 
 # PVZ GW1 / GW2 ID Finder
 
+**English** · [Русский](README.ru.md)
+
 **Reverse a 32-bit Garden Warfare string hash back into a real string — and browse the full GW1/GW2 hash database.**
 
 No backend. No build step. No dependencies. Everything runs in your browser.
 
 [![Pages](https://img.shields.io/badge/GitHub_Pages-ready-4be38a?style=flat-square)](#-deploy-to-github-pages)
 [![Deps](https://img.shields.io/badge/dependencies-0-4be38a?style=flat-square)](#)
-[![Tests](https://img.shields.io/badge/self--test-30_passing-4be38a?style=flat-square)](#-testing)
+[![Tests](https://img.shields.io/badge/self--test-passing-4be38a?style=flat-square)](#-testing)
 [![Data](https://img.shields.io/badge/hashes-31%2C486-38c6ff?style=flat-square)](#-the-databases)
 [![License](https://img.shields.io/badge/license-MIT-38c6ff?style=flat-square)](LICENSE)
 
@@ -27,7 +29,7 @@ by **Azzinnox (qu0tas)**
 - [Deploy to GitHub Pages](#-deploy-to-github-pages)
 - [The databases](#-the-databases)
 - [The hash](#-the-hash)
-- [The search](#-the-search)
+- [Inverting the hash](#-inverting-the-hash)
 - [Collisions — read this](#-collisions--read-this)
 - [Project layout](#-project-layout)
 - [Testing](#-testing)
@@ -41,7 +43,7 @@ by **Azzinnox (qu0tas)**
 
 | Tab | What it is for |
 | :-- | :-- |
-| **ID Finder** | You have a hash like `081816D8` and need a string that produces it. Finds `ID_xxxxxxxx` in milliseconds. |
+| **ID Finder** | You have a hash like `081816D8` and need a string that produces it. Solved instantly by algebra. |
 | **Hash Database** | 31 486 known hashes pulled out of GW1 and GW2 with Frosty Editor. Search by hash, by bound text, filter by length, sort, paginate. |
 | **Check String** | The other direction: type any string, get its hash instantly and see whether the game already binds something to it. |
 
@@ -94,6 +96,9 @@ Format is deliberately boring — hash to bound value, sorted by hash so diffs s
 }
 ```
 
+> [!TIP]
+> The table is sorted explicitly at load time rather than trusting key order. JavaScript enumerates integer-like object keys (`"10067901"`) first, in numeric order, before every other key — which is why an unsorted build appears to start in the middle of the alphabet.
+
 ### Updating them
 
 From a fresh Frosty CSV dump (UTF-16 or UTF-8, with or without BOM, RFC-4180 quoting):
@@ -114,7 +119,8 @@ Both normalise hashes to 8 uppercase hex digits, drop malformed rows, merge dupl
 
 ## 🧮 The hash
 
-Garden Warfare uses a plain DJB2-style rolling hash seeded with `0xFFFFFFFF`:
+Garden Warfare uses a plain DJB2-style rolling hash seeded with `0xFFFFFFFF`
+(`FsLocalizationStringDatabase.HashStringId`):
 
 ```
 h = 0xFFFFFFFF
@@ -134,32 +140,43 @@ Both are verified against a `BigInt` reference implementation in the self-test.
 
 ---
 
-## ⚡ The search
+## ⚡ Inverting the hash
 
-The hash is a linear polynomial over `ℤ/2³²`, which means it splits. For a suffix cut into halves `A` and `B`:
+This hash is **not** a one-way function. It is a linear polynomial over `ℤ/2³²`, so it can be solved directly. Two modes are available.
+
+### Algebra — the default, and the one you want
+
+For a prefix `P` followed by `n` unknown characters:
+
+```
+target = 33ⁿ · H(P) + c₀·33ⁿ⁻¹ + c₁·33ⁿ⁻² + … + cₙ₋₁   (mod 2³²)
+```
+
+Move the known part across, then subtract the baseline that all the characters contribute (each is written as `65 + d`, with `d` in `0…32`):
+
+```
+X = (target − 33ⁿ · H(P))            mod 2³²
+G = 33⁰ + 33¹ + … + 33ⁿ⁻¹ = (33ⁿ − 1) / 32
+D = (X − 65·G)                       mod 2³²
+```
+
+What is left is exactly the base-33 expansion of `D`. Read off `n` digits, map each to `65 + d`, done — no searching at all.
+
+With `n = 7`, `33⁷ = 42 618 442 977 > 2³²`, so **every possible target is reachable**.
+
+One detail worth exploiting: `D` is only known modulo `2³²`, and any `D + k·2³²` that still fits in 7 base-33 digits is an equally valid answer. Since `33⁷` is 9.9× larger than `2³²`, that yields up to **10 distinct solutions per prefix for free**. More are produced by padding the prefix (`ID_A`, `ID_B`, …) and re-solving.
+
+**1000 full solves take ~66 ms**, producing 30–40 results each.
+
+### Meet-in-the-middle — for a specific alphabet
+
+Brute force is still available when the answer must use particular characters (hex only, digits only, and so on). Splitting a suffix into halves `A` and `B`:
 
 ```
 H(prefix + A + B) = H(prefix + A) · 33^|B| + Q(B)   (mod 2³²)
 ```
 
-where `Q` is the same polynomial seeded with 0. Rearranged for a target `T`:
-
-```
-H(prefix + A) · 33^|B|  ≡  T − Q(B)   (mod 2³²)
-```
-
-So: tabulate the left side for every `A` once, then stream every `B` and probe. That is **meet-in-the-middle**, and it turns `|alphabet|^L` into roughly `2 · |alphabet|^(L/2)`.
-
-For hex suffixes of length 8 that is **131 072 candidates instead of 4 294 967 296** — about 30 ms.
-
-Implementation notes:
-
-- The table is an open hash table over flat `Uint32Array` / `Int32Array` buffers with chaining, not a JS object with string keys. No GC pressure, no rehashing, duplicate keys handled correctly.
-- Halves are generated iteratively in odometer order, never recursively.
-- The whole thing runs in a **Web Worker**, so the page stays responsive and **Stop** actually stops.
-- Progress is real, reported from the worker roughly 20× per second.
-- Lengths whose halves would blow the memory budget (`MAX_HALF = 2²²`) are skipped and named in the status line rather than freezing the tab.
-- **Every hit is re-verified** with the full hash function before it is displayed. An arithmetic mistake can never produce a wrong result — only a missing one.
+Tabulate the left side for every `A`, then stream every `B` and probe. That turns `|alphabet|^L` into roughly `2 · |alphabet|^(L/2)` — for hex suffixes of length 8, **131 072 candidates instead of 4 294 967 296**.
 
 | Preset | Lengths | Candidates | Time |
 | :-- | :-- | --: | --: |
@@ -167,13 +184,24 @@ Implementation notes:
 | standard | 4–9 | 1 327 872 | ~50 ms |
 | thorough | 1–10 | 3 425 345 | ~70 ms |
 
+> [!NOTE]
+> Brute force can legitimately find nothing. `16⁸` candidates over `2³²` outputs means roughly **37% of targets have no `ID_` + 8-hex-character preimage at all**. The algebraic mode never has that problem, which is why it is the default.
+
+Implementation notes:
+
+- The lookup table is an open hash table over flat `Uint32Array` / `Int32Array` buffers with chaining, not a JS object with string keys. No GC pressure, no rehashing, duplicate keys handled correctly.
+- Halves are generated iteratively in odometer order, never recursively.
+- Brute force runs in a **Web Worker**, so the page stays responsive and **Stop** actually stops. Progress is real, reported ~20× per second.
+- Lengths whose halves would blow the memory budget (`MAX_HALF = 2²²`) are skipped and named in the status line rather than freezing the tab.
+- **Every result from either mode is re-verified** with the full hash function before it is displayed. An arithmetic mistake can never produce a wrong answer — only a missing one.
+
 ---
 
 ## ⚠ Collisions — read this
 
 A 32-bit hash has only 4.3 billion possible outputs, so collisions are not an edge case, they are the norm. A typical target has **dozens** of `ID_` preimages.
 
-Every string the finder returns genuinely hashes to your target. But it is almost certainly **not** the original string the developers wrote.
+Every string returned genuinely hashes to your target. But it is almost certainly **not** the original string the developers wrote.
 
 That is why, when your target hash exists in the GW1/GW2 database, the real bound value is shown **above** the results. That line is usually the answer you actually wanted; the generated `ID_` strings are only useful when nothing is bound.
 
@@ -186,6 +214,7 @@ index.html               markup only — no styles, no logic, no data
 css/style.css            all styling, one file
 js/
   hash.js                the hash function (Math.imul + UTF-8 bytes)
+  algebra.js             direct algebraic inversion — the default mode
   search-core.js         meet-in-the-middle search — pure, no DOM, testable
   search-worker.js       runs search-core off the main thread
   database.js            lazy loading, filtering, sorting
@@ -200,11 +229,12 @@ tools/
   import-csv.mjs         Frosty CSV -> data/*.json
   extract-db.mjs         old inlined index.html -> data/*.json
   selftest.mjs           correctness + timing
+  algebra-check.mjs      algebra vs. brute force vs. a BigInt reference
   make-sample-data.mjs   placeholder data for development
   qa-shots.mjs           headless screenshots of every screen
 ```
 
-Nothing imports anything it does not need, and `search-core.js` has no DOM dependency at all — which is exactly why it can be tested in Node and reused in a worker.
+Nothing imports anything it does not need, and `search-core.js` and `algebra.js` have no DOM dependency at all — which is exactly why they can be tested in Node and reused in a worker.
 
 ---
 
@@ -214,7 +244,13 @@ Nothing imports anything it does not need, and `search-core.js` has no DOM depen
 node tools/selftest.mjs
 ```
 
-30 assertions: the hash against a `BigInt` reference (including empty strings, 300-character strings and Cyrillic), `pow33`, input parsing, round-trip inversion, the `length = 1` edge case where one half is empty, odd-length splits, empty prefixes, larger alphabets, result limits, and memory-budget skipping. Every returned candidate is re-hashed and checked.
+The hash against a `BigInt` reference (including empty strings, 300-character strings and Cyrillic), `pow33`, input parsing, round-trip inversion, the `length = 1` edge case where one half is empty, odd-length splits, empty prefixes, larger alphabets, result limits, and memory-budget skipping. Every returned candidate is re-hashed and checked.
+
+```bash
+node tools/algebra-check.mjs
+```
+
+Cross-checks three independent implementations against each other: a literal `BigInt` transcription of the game's function, the shipped `hash.js`, and both inversion modes. Confirms that `n = 7` reaches every target across 20 000 random hashes, and verifies database key ordering.
 
 ```bash
 node tools/qa-shots.mjs   # needs a local server on :8124 and Playwright
@@ -240,13 +276,15 @@ State lives in the query string, so any view is shareable:
 ?lang=en
 ```
 
+Every Frostbite string ID begins with `ID_`, so that prefix is fixed and has no UI control. For the rare case of hashing something that is not a string ID, override it with `?prefix=SOMETHING_`.
+
 ---
 
 ## 🌐 Browser support
 
-Chrome, Edge, Firefox and Safari, desktop and mobile. Requires ES modules, `Math.imul`, `TextEncoder` and module Web Workers — everything shipped by 2023. If workers are unavailable the search transparently falls back to time-sliced execution on the main thread.
+Chrome, Edge, Firefox and Safari, desktop and mobile. Requires ES modules, `Math.imul`, `TextEncoder` and module Web Workers — everything shipped by 2023. If workers are unavailable the brute-force search transparently falls back to time-sliced execution on the main thread.
 
-Fully responsive: single-column layout on phones, 44 px touch targets, safe-area insets for notched screens, no zoom-on-focus, and `prefers-reduced-motion` respected.
+Fully responsive: two-column option grids on phones, 44 px touch targets, sticky table headers, safe-area insets for notched screens, no zoom-on-focus, and `prefers-reduced-motion` respected.
 
 ---
 

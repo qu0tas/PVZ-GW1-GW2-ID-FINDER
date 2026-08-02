@@ -3,6 +3,7 @@
 import { $, el, formatNumber, formatDuration, copyText, toast, urlState, debounce } from './util.js';
 import { parseHash, toHex } from './hash.js';
 import { ALPHABETS, DEPTHS, estimateWork } from './search-core.js';
+import { solveMany, DEFAULT_N } from './algebra.js';
 import { t, onLangChange } from './i18n.js';
 import { prefetchDb } from './database.js';
 
@@ -46,7 +47,8 @@ function readConfig() {
     minLen,
     maxLen,
     limit: Number(limitSel.value) || 30,
-    prefix: prefixInput.value ?? '',
+    // Fixed at "ID_": Frostbite string IDs always carry that prefix.
+    prefix: prefixInput?.value || 'ID_',
   };
 }
 
@@ -58,10 +60,22 @@ function clampLen(value, fallback) {
 
 function syncCustomFields() {
   const isCustom = depthSel.value === 'custom';
-  document.querySelectorAll('.opt-custom').forEach((node) => { node.hidden = !isCustom; });
+  const isAlgebra = depthSel.value === 'algebra';
+  document.querySelectorAll('.opt-custom').forEach((node) => {
+    node.hidden = !isCustom || isAlgebra;
+  });
+  // The alphabet is fixed by the algebra (base-33 digits map to 'A'..'a'),
+  // so hide the control instead of letting it lie about what will happen.
+  const alphaOpt = alphaSel.closest('.opt');
+  if (alphaOpt) alphaOpt.hidden = isAlgebra;
 }
 
 function updateBudget() {
+  if (depthSel.value === 'algebra') {
+    budgetNode.classList.remove('over');
+    budgetNode.innerHTML = t('st.algebra');
+    return;
+  }
   const { chars, minLen, maxLen } = readConfig();
   if (minLen > maxLen) {
     budgetNode.classList.add('over');
@@ -191,6 +205,35 @@ function finish(payload, prefix) {
   setStatus(html, payload.results.length ? 'ok' : 'bad');
 }
 
+/**
+ * Instant path: solve the hash equation instead of searching for a preimage.
+ * No worker, no progress bar — this finishes in well under a millisecond.
+ */
+function runAlgebra(target, config) {
+  const hex = toHex(target);
+  input.value = hex;
+  urlState.patch({ tab: 'finder', hash: hex });
+  annotateKnown(hex);
+
+  const started = performance.now();
+  const { results } = solveMany({
+    target,
+    prefix: config.prefix || 'ID_',
+    n: DEFAULT_N,
+    limit: config.limit,
+  });
+  const time = formatDuration(performance.now() - started);
+
+  setBusy(false);
+  renderResults(results, config.prefix || 'ID_');
+  setStatus(
+    results.length
+      ? t('st.doneAlgebra', { count: formatNumber(results.length), time })
+      : t('st.doneAlgebraNone'),
+    results.length ? 'ok' : 'bad',
+  );
+}
+
 function createWorker() {
   try {
     return new Worker(new URL('./search-worker.js', import.meta.url), { type: 'module' });
@@ -237,6 +280,12 @@ function startSearch() {
   }
 
   const config = readConfig();
+
+  if (depthSel.value === 'algebra') {
+    runAlgebra(parsed.value, config);
+    return;
+  }
+
   if (config.minLen > config.maxLen) {
     showError('err.badRange');
     return;
@@ -313,8 +362,12 @@ export function initFinder() {
 
   onLangChange(() => {
     updateBudget();
-    renderResults(lastResults, prefixInput.value ?? '');
+    renderResults(lastResults, prefixInput?.value || 'ID_');
   });
+
+  // Escape hatch for non-ID targets: ?prefix=SOMETHING_
+  const { prefix } = urlState.read();
+  if (prefix && prefixInput) prefixInput.value = prefix;
 
   // Deep link: ?hash=081816D8 pre-fills and runs the search.
   const { hash } = urlState.read();
