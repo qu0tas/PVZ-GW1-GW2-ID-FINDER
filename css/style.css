@@ -303,6 +303,14 @@ button.ghost.is-done{color:var(--accent);border-color:var(--accent-dim);}
 .site-footer p{margin:0;}
 .site-footer a{color:var(--accent);}
 .site-footer .dim{color:#5e7a6c;}
+.footer-discord{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;}
+.discord-mark{color:var(--dim);flex:none;}
+/* The Discord handle is not a URL, so it is a copy button rather than a link. */
+.copy-chip{font:inherit;font-family:var(--mono);color:var(--accent);background:var(--panel-2);
+  border:1px solid var(--line);border-radius:6px;padding:2px 8px;cursor:pointer;
+  min-height:32px;transition:border-color .15s,color .15s;}
+.copy-chip:hover{border-color:var(--accent-dim);}
+.copy-chip.is-done{color:var(--ink);background:var(--accent);border-color:var(--accent);}
 
 /* ---- toast ------------------------------------------------------------- */
 .toast{

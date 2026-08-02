@@ -1,7 +1,7 @@
 /** Entry point: language, tabs, keyboard shortcuts, lazy module init. */
 
-import { $, $$, urlState, store } from './util.js';
-import { initLang, setLang, applyTranslations } from './i18n.js';
+import { $, $$, urlState, store, copyText, toast } from './util.js';
+import { initLang, setLang, applyTranslations, t } from './i18n.js';
 import { initFinder, stopSearch } from './finder.js';
 
 const TABS = ['finder', 'db', 'check'];
@@ -96,11 +96,30 @@ function initShortcuts() {
   });
 }
 
+/** Discord handles cannot be linked, so offer one-click copying instead. */
+function initFooter() {
+  const button = $('#btnDiscord');
+  if (!button) return;
+  const handle = button.dataset.copy || button.textContent.trim();
+
+  button.addEventListener('click', async () => {
+    if (!(await copyText(handle))) return;
+    button.classList.add('is-done');
+    button.textContent = t('common.copied');
+    toast(t('common.copied'));
+    setTimeout(() => {
+      button.classList.remove('is-done');
+      button.textContent = handle;
+    }, 1400);
+  });
+}
+
 function boot() {
   initLangToggle();
   initTabs();
   initFinder();
   initShortcuts();
+  initFooter();
 
   const params = urlState.read();
   activateTab(params.tab || 'finder');

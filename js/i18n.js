@@ -84,6 +84,9 @@ export const STRINGS = {
     'common.copied': 'Скопировано',
     'common.loading': 'Загрузка…',
 
+    'footer.by': 'Создано qu0tas (Azzinnox)',
+    'footer.thanks': 'Отдельная благодарность tchlhy за информацию об ID',
+    'footer.discordNote': '(вопросы и сообщения об ошибках)',
     'footer.note': 'Работает без сервера. Данные баз извлечены из игры через Frosty Editor.',
 
     'err.empty': 'Введи хеш',
@@ -182,6 +185,9 @@ export const STRINGS = {
     'common.copied': 'Copied',
     'common.loading': 'Loading…',
 
+    'footer.by': 'Created by qu0tas (Azzinnox)',
+    'footer.thanks': 'Special thanks to tchlhy for the ID information',
+    'footer.discordNote': '(questions and bug reports)',
     'footer.note': 'Serverless. Database contents extracted from the game with Frosty Editor.',
 
     'err.empty': 'Enter a hash',

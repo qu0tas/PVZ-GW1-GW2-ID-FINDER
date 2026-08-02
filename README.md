@@ -35,6 +35,7 @@ by **Azzinnox (qu0tas)**
 - [Testing](#-testing)
 - [Shortcuts and URLs](#-shortcuts-and-urls)
 - [Browser support](#-browser-support)
+- [Credits and feedback](#-credits-and-feedback)
 - [License](#-license)
 
 ---
@@ -285,6 +286,16 @@ Every Frostbite string ID begins with `ID_`, so that prefix is fixed and has no 
 Chrome, Edge, Firefox and Safari, desktop and mobile. Requires ES modules, `Math.imul`, `TextEncoder` and module Web Workers — everything shipped by 2023. If workers are unavailable the brute-force search transparently falls back to time-sliced execution on the main thread.
 
 Fully responsive: two-column option grids on phones, 44 px touch targets, sticky table headers, safe-area insets for notched screens, no zoom-on-focus, and `prefers-reduced-motion` respected.
+
+---
+
+## 💬 Credits and feedback
+
+Created by **qu0tas (Azzinnox)**.
+
+Special thanks to **tchlhy** for the ID information.
+
+Questions and bug reports — Discord: **xviiyvojer**
 
 ---
 
